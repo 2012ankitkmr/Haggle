@@ -3,7 +3,10 @@ package ankit.barter.haggle;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatButton;
 import android.util.Log;
 
 import android.content.Intent;
@@ -13,6 +16,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+
+import java.util.Map;
+
 import butterknife.ButterKnife;
 import butterknife.Bind;
 
@@ -20,17 +30,31 @@ public class LoginActivity extends Activity {
     private static final String TAG = "LoginActivity";
     private static final int REQUEST_SIGNUP = 0;
 
-    @Bind(R.id.input_email) EditText _emailText;
-    @Bind(R.id.input_password) EditText _passwordText;
-    @Bind(R.id.btn_login) Button _loginButton;
-    @Bind(R.id.link_signup) TextView _signupLink;
-    
+    @Bind(R.id.input_email)
+    EditText _emailText;
+    @Bind(R.id.input_password)
+    EditText _passwordText;
+    @Bind(R.id.btn_login)
+    Button _loginButton;
+    @Bind(R.id.google_login)
+    Button _googleloginButton;
+    @Bind(R.id.link_signup)
+    TextView _signupLink;
+    Firebase mRootRef;
+    Map<String, Map< String , String> > message = null;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-        
+
+        //Firebase User database get method
+        Firebase.setAndroidContext(this);
+        mRootRef = new Firebase("https://haggle-64ac4.firebaseio.com/");
+
+
+        // Login Button Code
         _loginButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -39,6 +63,7 @@ public class LoginActivity extends Activity {
             }
         });
 
+        //Sign up Button Code
         _signupLink.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -48,13 +73,46 @@ public class LoginActivity extends Activity {
                 startActivityForResult(intent, REQUEST_SIGNUP);
             }
         });
+
+        _googleloginButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+         //       Toast.makeText(getBaseContext(),  "Hi...!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
     }
+
+
+
+    protected void onStart()
+    {
+        super.onStart();
+        Firebase messageRef = mRootRef.child("Users");
+        messageRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                 message = dataSnapshot.getValue(Map.class);
+                //Log.v("E_VALUE",message);
+
+//                Map<String,String> userinfo = message.get("ankit_95");
+//                Toast.makeText(getBaseContext(),  userinfo.get("Password"), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+    }
+
 
     public void login() {
         Log.d(TAG, "Login");
 
         if (!validate()) {
-            onLoginFailed();
+            //onLoginFailed();
             return;
         }
 
@@ -66,8 +124,8 @@ public class LoginActivity extends Activity {
         progressDialog.setMessage("Authenticating...");
         progressDialog.show();
 
-        String email = _emailText.getText().toString();
-        String password = _passwordText.getText().toString();
+        final String email = _emailText.getText().toString().replace(".","_");
+        final String password = _passwordText.getText().toString();
 
         // TODO: Implement your own authentication logic here.
 
@@ -75,9 +133,23 @@ public class LoginActivity extends Activity {
                 new Runnable() {
                     public void run() {
                         // On complete call either onLoginSuccess or onLoginFailed
-                        onLoginSuccess();
-                        // onLoginFailed();
-                        progressDialog.dismiss();
+
+                        try {
+                            Map<String, String> userinfo = message.get(email);
+                            //Toast.makeText(getBaseContext(), userinfo.get("Password"), Toast.LENGTH_SHORT).show();
+
+                            if (userinfo != null && userinfo.get("Password").equals(password))
+                                onLoginSuccess();
+                            else
+                                onLoginFailed();
+                            progressDialog.dismiss();
+
+                        }catch (Exception e)
+                        {
+                            onLoginFailed();
+                            progressDialog.dismiss();
+                        }
+
                     }
                 }, 3000);
     }
@@ -107,7 +179,9 @@ public class LoginActivity extends Activity {
     }
 
     public void onLoginFailed() {
-        Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
+        //Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_SHORT).show();
+        CoordinatorLayout Clayout = (CoordinatorLayout)findViewById(R.id.snackbarlocation);
+        Snackbar.make(Clayout, "Username or Password is Incorrect!", Snackbar.LENGTH_SHORT).show();
 
         _loginButton.setEnabled(true);
     }
@@ -131,6 +205,8 @@ public class LoginActivity extends Activity {
         } else {
             _passwordText.setError(null);
         }
+
+
 
         return valid;
     }
