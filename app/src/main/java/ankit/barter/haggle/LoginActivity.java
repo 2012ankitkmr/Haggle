@@ -2,6 +2,9 @@ package ankit.barter.haggle;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
@@ -40,8 +43,10 @@ public class LoginActivity extends Activity {
     Button _googleloginButton;
     @Bind(R.id.link_signup)
     TextView _signupLink;
+
+
     Firebase mRootRef;
-    Map<String, Map< String , String> > message = null;
+    Map<String,Map<String,String> > Database = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -89,15 +94,11 @@ public class LoginActivity extends Activity {
     protected void onStart()
     {
         super.onStart();
-        Firebase messageRef = mRootRef.child("Users");
-        messageRef.addValueEventListener(new ValueEventListener() {
+        Firebase UserRef = mRootRef.child("Users");
+        UserRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                 message = dataSnapshot.getValue(Map.class);
-                //Log.v("E_VALUE",message);
-
-//                Map<String,String> userinfo = message.get("ankit_95");
-//                Toast.makeText(getBaseContext(),  userinfo.get("Password"), Toast.LENGTH_SHORT).show();
+                 Database = dataSnapshot.getValue(Map.class);
             }
 
             @Override
@@ -135,10 +136,10 @@ public class LoginActivity extends Activity {
                         // On complete call either onLoginSuccess or onLoginFailed
 
                         try {
-                            Map<String, String> userinfo = message.get(email);
+                            Map<String,String> userinfo = Database.get(email);
                             //Toast.makeText(getBaseContext(), userinfo.get("Password"), Toast.LENGTH_SHORT).show();
 
-                            if (userinfo != null && userinfo.get("Password").equals(password))
+                            if ((password != null && userinfo != null) && userinfo.get("Password").equals(password))
                                 onLoginSuccess();
                             else
                                 onLoginFailed();
@@ -162,6 +163,7 @@ public class LoginActivity extends Activity {
 
                 // TODO: Implement successful signup logic here
                 // By default we just finish the Activity and log them in automatically
+
                 this.finish();
             }
         }
@@ -174,6 +176,7 @@ public class LoginActivity extends Activity {
     }
 
     public void onLoginSuccess() {
+        Toast.makeText(getBaseContext(), "Successfully Logged In!", Toast.LENGTH_SHORT).show();
         _loginButton.setEnabled(true);
         finish();
     }
@@ -206,8 +209,12 @@ public class LoginActivity extends Activity {
             _passwordText.setError(null);
         }
 
-
-
         return valid;
+    }
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
