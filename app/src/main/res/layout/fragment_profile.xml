@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/header_cover_image"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/cover" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/user_profile_photo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_below="@+id/header_cover_image"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="-60dp"
+            android:background="@drawable/profile_circular_border_imageview"
+            android:elevation="5dp"
+            android:padding="20dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/album7"
+            android:clickable="true" />
+
+
+        <RelativeLayout
+            android:id="@+id/profile_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/header_cover_image"
+            android:background="@color/primary_dark"
+            android:elevation="4dp"
+            android:paddingBottom="24dp">
+
+
+
+            <TextView
+                android:id="@+id/user_profile_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="76dp"
+                android:text="Ankit Kumar"
+                android:textColor="#fff"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/user_profile_short_bio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/user_profile_name"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="12dp"
+                android:text="2012ankitkmr@gmail.com"
+                android:textColor="#fff"
+                android:textSize="14sp" />
+
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/fab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_action_edit"
+                android:layout_gravity="right"
+                android:background="@color/primary_darker"
+                android:layout_marginRight="16dp"
+                android:layout_above="@+id/user_profile_short_bio"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true" />
+        </RelativeLayout>
+
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/profile_layout"
+            android:layout_marginTop="5dp"
+            android:orientation="vertical"
+            android:id="@+id/info_layout">
+
+            <TextView
+                android:id="@+id/phone_number"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:background="#fff"
+                android:clickable="true"
+                android:elevation="4dp"
+                android:padding="20dp"
+                android:text="Phone No.999999999" />
+            <TextView
+                android:id="@+id/profile_address"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:background="#fff"
+                android:clickable="true"
+                android:elevation="4dp"
+                android:padding="20dp"
+                android:text="Address: NIT Jalandhar" />
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/product_content"
+            android:layout_below="@+id/info_layout"
+            android:layout_alignParentBottom="true">
+
+            <ImageView
+                android:id="@+id/product_logo"
+                android:layout_marginTop="25dp"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:src="@drawable/products_icon" />
+
+            <HorizontalScrollView
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/product_content"
+                >
+
+
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/product01"
+                android:src="@drawable/album11"
+                android:layout_height="100dp"
+                android:scaleType="centerCrop"
+                android:layout_width="100dp"
+                android:padding="10dp"
+                android:layout_margin="@dimen/product_margin"
+                android:layout_centerVertical="true" />
+
+
+
+            <ImageView
+                android:src="@drawable/album10"
+                android:id="@+id/product02"
+                android:layout_height="100dp"
+                android:scaleType="centerCrop"
+                android:layout_width="100dp"
+                android:padding="10dp"
+                android:elevation="4dp"
+                android:layout_centerVertical="true"
+                android:layout_margin="@dimen/product_margin"
+                android:layout_toEndOf="@+id/product01"
+                android:layout_toRightOf="@+id/product01"/>
+
+
+            <ImageView
+                android:id="@+id/product03"
+                android:src="@drawable/album3"
+                android:layout_height="100dp"
+                android:scaleType="centerCrop"
+                android:layout_width="100dp"
+                android:padding="10dp"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/product02"
+                android:layout_margin="@dimen/product_margin"
+                android:layout_toEndOf="@+id/product02" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/fab2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    
+                    android:layout_margin="@dimen/fab_margin"
+                    android:src="@android:drawable/ic_input_add" />
+            </LinearLayout>
+            </HorizontalScrollView>
+
+
+        </LinearLayout>
+
+    </RelativeLayout>
+</ScrollView>
