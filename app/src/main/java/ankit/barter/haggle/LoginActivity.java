@@ -1,8 +1,11 @@
 package ankit.barter.haggle;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -13,7 +16,9 @@ import android.support.v7.widget.AppCompatButton;
 import android.util.Log;
 
 import android.content.Intent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -23,6 +28,7 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+import com.google.android.gms.auth.GoogleAuthUtil;
 
 import java.util.Map;
 
@@ -44,9 +50,22 @@ public class LoginActivity extends Activity {
     @Bind(R.id.link_signup)
     TextView _signupLink;
 
+    Context mContext = LoginActivity.this;
+    AccountManager mAccountManager;
+    String token;
+    int serverCode;
+    private static final String SCOPE = "oauth2:https://www.googleapis.com/auth/userinfo.profile";
+
 
     Firebase mRootRef;
-    Map<String,Map<String,String> > Database = null;
+    Map<String, Map<String, String>> Database = null;
+
+
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    public static final String Email = "EmailKey";
+    public static final String loginKey = "loginKey";
+    SharedPreferences sharedpreferences;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,8 +74,17 @@ public class LoginActivity extends Activity {
         ButterKnife.bind(this);
 
         //Firebase User database get method
-        Firebase.setAndroidContext(this);
-        mRootRef = new Firebase("https://haggle-64ac4.firebaseio.com/");
+        if(isNetworkAvailable()) {
+            Firebase.setAndroidContext(this);
+            mRootRef = new Firebase("https://haggle-64ac4.firebaseio.com/");
+        }
+        else
+        {
+            Toast.makeText(LoginActivity.this, "No Network Service!",
+                    Toast.LENGTH_SHORT).show();
+
+        }
+        sharedpreferences = getSharedPreferences(MyPREFERENCES,Context.MODE_PRIVATE);
 
 
         // Login Button Code
@@ -78,82 +106,104 @@ public class LoginActivity extends Activity {
                 startActivityForResult(intent, REQUEST_SIGNUP);
             }
         });
-
+//Gmail Sign In
         _googleloginButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-         //       Toast.makeText(getBaseContext(),  "Hi...!", Toast.LENGTH_SHORT).show();
-
+                syncGoogleAccount();
             }
         });
     }
 
+// --------------------------------------------------Basic Login Logic----------------------------------------------------------------
 
-
-    protected void onStart()
-    {
+    protected void onStart() {
         super.onStart();
-        Firebase UserRef = mRootRef.child("Users");
-        UserRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                 Database = dataSnapshot.getValue(Map.class);
-            }
+        if(isNetworkAvailable()==true) {
+          //  Toast.makeText(LoginActivity.this, "Here", Toast.LENGTH_SHORT).show();
+            Firebase UserRef = mRootRef.child("Users");
+            UserRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Database = dataSnapshot.getValue(Map.class);
+                    //Log.e("Present","here");
+                }
 
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
 
-            }
-        });
+                }
+            });
+        }
+        else
+        {
+            Toast.makeText(LoginActivity.this, "No Network Service!",
+                    Toast.LENGTH_SHORT).show();
+
+        }
     }
-
 
     public void login() {
         Log.d(TAG, "Login");
+
 
         if (!validate()) {
             //onLoginFailed();
             return;
         }
 
-        _loginButton.setEnabled(false);
+        if(isNetworkAvailable()==true) {
+            _loginButton.setEnabled(false);
 
-        final ProgressDialog progressDialog = new ProgressDialog(LoginActivity.this,
-                R.style.AppTheme_Dark_Dialog);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setMessage("Authenticating...");
-        progressDialog.show();
 
-        final String email = _emailText.getText().toString().replace(".","_");
-        final String password = _passwordText.getText().toString();
+            final ProgressDialog progressDialog = new ProgressDialog(LoginActivity.this,
+                    R.style.AppTheme_Dark_Dialog);
+            progressDialog.setIndeterminate(true);
+            progressDialog.setMessage("Authenticating...");
+            progressDialog.show();
 
-        // TODO: Implement your own authentication logic here.
+            final String email = _emailText.getText().toString().replace(".", "_");
+            final String password = _passwordText.getText().toString();
 
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        // On complete call either onLoginSuccess or onLoginFailed
+            // TODO: Implement your own authentication logic here.
 
-                        try {
-                            Map<String,String> userinfo = Database.get(email);
-                            //Toast.makeText(getBaseContext(), userinfo.get("Password"), Toast.LENGTH_SHORT).show();
+            new android.os.Handler().postDelayed(
+                    new Runnable() {
+                        public void run() {
+                            // On complete call either onLoginSuccess or onLoginFailed
 
-                            if ((password != null && userinfo != null) && userinfo.get("Password").equals(password))
-                                onLoginSuccess();
-                            else
+                            try {
+                                Map<String, String> userinfo = Database.get(email);
+//                                Toast.makeText(getBaseContext(),"Pass "+ userinfo.get("Password"), Toast.LENGTH_LONG).show();
+
+                                if ((password != null && userinfo != null) && userinfo.get("Password").equals(password)) {
+                                 //   ProfileFragment us = new ProfileFragment();
+                                   // us.setText(userinfo);
+                                    onLoginSuccess(email);
+                                }
+                                else
+                                    onLoginFailed();
+                                progressDialog.dismiss();
+
+                            } catch (Exception e) {
+                                Toast.makeText(getBaseContext(),"User Exception "+e.toString(), Toast.LENGTH_LONG).show();
+                                Log.e("User Exception ",e.toString());
                                 onLoginFailed();
-                            progressDialog.dismiss();
+                                progressDialog.dismiss();
+                            }
 
-                        }catch (Exception e)
-                        {
-                            onLoginFailed();
-                            progressDialog.dismiss();
                         }
+                    }, 3000);
 
-                    }
-                }, 3000);
+        }
+        else
+        {
+            Toast.makeText(LoginActivity.this, "No Network Service!",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
+
 
 
     @Override
@@ -175,7 +225,13 @@ public class LoginActivity extends Activity {
         moveTaskToBack(true);
     }
 
-    public void onLoginSuccess() {
+    public void onLoginSuccess(String str) {
+
+
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putString(Email,str);
+        editor.putInt(loginKey,1);
+        editor.commit();
         Toast.makeText(getBaseContext(), "Successfully Logged In!", Toast.LENGTH_SHORT).show();
         _loginButton.setEnabled(true);
         finish();
@@ -183,7 +239,7 @@ public class LoginActivity extends Activity {
 
     public void onLoginFailed() {
         //Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_SHORT).show();
-        CoordinatorLayout Clayout = (CoordinatorLayout)findViewById(R.id.snackbarlocation);
+        CoordinatorLayout Clayout = (CoordinatorLayout) findViewById(R.id.snackbarlocation);
         Snackbar.make(Clayout, "Username or Password is Incorrect!", Snackbar.LENGTH_SHORT).show();
 
         _loginButton.setEnabled(true);
@@ -211,10 +267,61 @@ public class LoginActivity extends Activity {
 
         return valid;
     }
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+
+//-------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+    // ---------------------------------------------------Gmail Logic ----------------------------------------------------------------
+
+
+    private String[] getAccountNames() {
+        mAccountManager = AccountManager.get(this);
+
+             Account[] accounts = mAccountManager.getAccountsByType(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
+           String names[] = new String[accounts.length];
+            for (int i = 0; i < names.length; i++) {
+                names[i] = accounts[i].name;
+            }
+
+        return names;
     }
+
+    private AbstractGetNameTask getTask(LoginActivity activity, String email, String scope) {
+        return new GetNameInForeground(activity, email, scope);
+    }
+
+    public void syncGoogleAccount() {
+        if (isNetworkAvailable() == true) {
+            String[] accountarrs = getAccountNames();
+
+            if (accountarrs.length > 0) {
+                getTask(LoginActivity.this, accountarrs[0], SCOPE).execute();
+            } else {
+                Toast.makeText(LoginActivity.this, "No Google Account Sync!",
+                        Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(LoginActivity.this, "No Network Service!",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+// ------------------------------------------------------------------------------------------------------------
+
+
+    public boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) mContext
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            Log.e("Network Testing", "Available");
+            return true;
+        }
+
+        Log.e("Network Testing", "Not Available");
+        return false;
+    }
+
 }
