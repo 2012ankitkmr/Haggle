@@ -2,6 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/ipadblurbackground"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
@@ -27,7 +28,7 @@
             android:elevation="5dp"
             android:padding="20dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/album7"
+            android:src="@drawable/album1"
             android:clickable="true" />
 
 
@@ -41,20 +42,19 @@
             android:paddingBottom="24dp">
 
 
-
             <TextView
                 android:id="@+id/user_profile_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="76dp"
-                android:text="Ankit Kumar"
+                android:text="User Name"
                 android:textColor="#fff"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/user_profile_short_bio"
+                android:id="@+id/user_profile_email"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/user_profile_name"
@@ -70,9 +70,7 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_action_edit"
                 android:layout_gravity="right"
-                android:background="@color/primary_darker"
                 android:layout_marginRight="16dp"
-                android:layout_above="@+id/user_profile_short_bio"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true" />
         </RelativeLayout>
@@ -84,28 +82,20 @@
             android:layout_below="@+id/profile_layout"
             android:layout_marginTop="5dp"
             android:orientation="vertical"
-            android:id="@+id/info_layout">
+            android:id="@+id/info_layout"
+
+            >
 
             <TextView
                 android:id="@+id/phone_number"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
-                android:background="#fff"
                 android:clickable="true"
                 android:elevation="4dp"
-                android:padding="20dp"
-                android:text="Phone No.999999999" />
-            <TextView
-                android:id="@+id/profile_address"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:background="#fff"
-                android:clickable="true"
-                android:elevation="4dp"
-                android:padding="20dp"
-                android:text="Address: NIT Jalandhar" />
+                android:padding="10dp"
+                android:textSize="9pt"
+                android:text="Phone No.:999999999" />
 
 
         </LinearLayout>
@@ -122,17 +112,14 @@
                 android:id="@+id/product_logo"
                 android:layout_marginTop="25dp"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="60dp"
                 android:src="@drawable/products_icon" />
 
             <HorizontalScrollView
-
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/product_content"
                 >
-
-
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -141,24 +128,22 @@
 
             <ImageView
                 android:id="@+id/product01"
-                android:src="@drawable/album11"
-                android:layout_height="100dp"
+                android:src="@drawable/album2"
+                android:layout_height="@dimen/item_pic_height"
                 android:scaleType="centerCrop"
-                android:layout_width="100dp"
+                android:layout_width="@dimen/item_pic_width"
                 android:padding="10dp"
                 android:layout_margin="@dimen/product_margin"
                 android:layout_centerVertical="true" />
 
 
-
             <ImageView
-                android:src="@drawable/album10"
+                android:src="@drawable/album3"
                 android:id="@+id/product02"
-                android:layout_height="100dp"
+                android:layout_height="@dimen/item_pic_height"
                 android:scaleType="centerCrop"
-                android:layout_width="100dp"
+                android:layout_width="@dimen/item_pic_width"
                 android:padding="10dp"
-                android:elevation="4dp"
                 android:layout_centerVertical="true"
                 android:layout_margin="@dimen/product_margin"
                 android:layout_toEndOf="@+id/product01"
@@ -168,9 +153,9 @@
             <ImageView
                 android:id="@+id/product03"
                 android:src="@drawable/album3"
-                android:layout_height="100dp"
+                android:layout_height="@dimen/item_pic_height"
                 android:scaleType="centerCrop"
-                android:layout_width="100dp"
+                android:layout_width="@dimen/item_pic_width"
                 android:padding="10dp"
                 android:layout_centerVertical="true"
                 android:layout_toRightOf="@+id/product02"
@@ -181,10 +166,9 @@
                     android:id="@+id/fab2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="end"
-                    
+                    android:layout_gravity="end|center_vertical"
                     android:layout_margin="@dimen/fab_margin"
-                    android:src="@android:drawable/ic_input_add" />
+                    android:src="@drawable/ic_add" />
             </LinearLayout>
             </HorizontalScrollView>
 
