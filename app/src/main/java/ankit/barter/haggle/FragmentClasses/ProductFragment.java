@@ -20,7 +20,6 @@ import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 
-import android.support.v7.internal.app.ToolbarActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -40,7 +39,9 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
-import com.google.android.gms.analytics.ecommerce.Product;
+import com.squareup.picasso.LruCache;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.Picasso;
 
 import android.widget.TextView;
 
@@ -66,7 +67,6 @@ import ankit.barter.haggle.R;
 import ankit.barter.haggle.RecyclerItemClickListener;
 import ankit.barter.haggle.StructureClasses.Feeds;
 import ankit.barter.haggle.StructureClasses.ProductClass;
-import ankit.barter.haggle.StructureClasses.User;
 import ankit.barter.haggle.ThreadClass;
 import ankit.barter.haggle.Utility;
 
@@ -80,7 +80,7 @@ public class ProductFragment extends Fragment {
     final static String CNTURL="https://haggle-64ac4.firebaseio.com/Productcnt";
     final static String DB_URL="https://haggle-64ac4.firebaseio.com/ProductIds";
     final static String Cloud_URL="http://res.cloudinary.com/dstrkdluw/image/upload/g_face,c_thumb,w_250,h_250/";
-    final static String Cloud_URL1="http://res.cloudinary.com/dstrkdluw/image/upload/c_thumb,w_150,h_120/";
+    final static String Cloud_URL1="http://res.cloudinary.com/dstrkdluw/image/upload/bo_5px_solid_rgb:ffc10730,c_thumb,w_140,h_140/";
 
     RecyclerView rv;
 
@@ -98,10 +98,13 @@ public class ProductFragment extends Fragment {
     TreeMap<String,Map<String,String>> ProductData = null;
     Map<String,Map<String,String>> CategoryData = null;
     Map<String,Map<String,String>> UserDatabase = null;
-    String cnt=null;
 
+    String Cnt = null;
+    String ProductID = null;
 
-    private String userChoosenTask;
+int flag= 1;
+
+    private String userChoosenTask =null;
     private int REQUEST_CAMERA = 0, SELECT_FILE = 1;
 
     private List<String> Categorylist = new ArrayList<>();
@@ -161,6 +164,11 @@ public class ProductFragment extends Fragment {
 
         return rootView;
     }
+
+
+
+
+
     boolean flag1= false,flag2= false,flag3= false;
     int count = 0;
 
@@ -184,6 +192,7 @@ public class ProductFragment extends Fragment {
         img1  =(ImageView)d.findViewById(R.id.add_pp1);
          img2  =(ImageView)d.findViewById(R.id.add_pp2);
          img3  =(ImageView)d.findViewById(R.id.add_pp3);
+        ProductID = Cnt;
         img1.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -228,7 +237,7 @@ public class ProductFragment extends Fragment {
 
                // String selected = "";
                 int cntChoice = multiple_select.getCount();
-Categorylist.clear();
+                 Categorylist.clear();
                 SparseBooleanArray sparseBooleanArray = multiple_select.getCheckedItemPositions();
                 for(int i = 0; i < cntChoice; i++){
                     if(sparseBooleanArray.get(i)) {
@@ -276,10 +285,10 @@ Categorylist.clear();
         final String PersonName =UserData.get("Name");
         final String PersonId = UserData.get("Email");
         final String Pic_id = UserData.get("Pic_id");
-        final String Product_id = cnt;
-        final String Product_pic1 = cnt+"_"+"1";
-        final String Product_pic2 = cnt+"_"+"2";
-        final String Product_pic3 = cnt+"_"+"3";
+        final String Product_id = Cnt;
+        final String Product_pic1 = Cnt+"_"+"1";
+        final String Product_pic2 = Cnt+"_"+"2";
+        final String Product_pic3 = Cnt+"_"+"3";
 
         addBtn = (Button) d.findViewById(R.id.add_a_newproduct);
 
@@ -338,7 +347,7 @@ Categorylist.clear();
                                                 mCategoryRef.child(Product_id).setValue(catmap);
 
 
-                                                mProductRef.child(email).child(Product_id).setValue(Pic_id);
+                                                mProductRef.child(email).child(Product_id).setValue(email);
 
 
                                                 ProductClass productClass =new ProductClass(name,Pic_id,location,myCategory,PersonName,
@@ -383,6 +392,8 @@ Categorylist.clear();
                     else if(userChoosenTask.equals("Choose from Library"))
                         galleryIntent();
                 } else {
+
+                    flag = 0;
                     //code for deny
                 }
                 break;
@@ -413,7 +424,9 @@ Categorylist.clear();
                         galleryIntent();
 
                 } else if (items[item].equals("Cancel")) {
+                    userChoosenTask="Cancel";
                     dialog.dismiss();
+
                 }
             }
         });
@@ -533,54 +546,116 @@ Categorylist.clear();
 
     private String getPicId()
     {
-        String pic_Id = cnt+"_"+img_id;
+        String pic_Id = ProductID;
+        if(img_id.equals("")==false)
+            pic_Id = pic_Id+"_"+img_id;
+        else pic_Id = pic_Id+"_";
+
         return pic_Id;
     }
 
 
     String Usercategoryselection = null;
+    ImageView Img1= null,Img2= null,Img3=null;
+
+
+    String Product_pic1 =null;
+    String Product_pic2 =null;
+    String Product_pic3=null;
     public void ShowDialog(int position)
     {
 
         final String mail = sharedpreferences.getString(Email, "abc@gmail_com");
-        int cnt = 0;
+        int count = 0;
         String HighlightedProduct = null;
 
         for(String keys : Database.keySet()) {
             Map<String, String> mymap = Database.get(keys);
             if (mail.equals(mymap.get("PersonId").replace(".", "_"))==false)
                 continue;
-            if(cnt==position)
+            if(count==position)
             {
                 HighlightedProduct = keys;
                 break;
             }
-            cnt++;
+            count++;
         }
+
+
         final Dialog d1=new Dialog(getActivity());
         d1.setContentView(R.layout.card_update_delete_wizard);
 
-        Map<String,String> mymap = Database.get(HighlightedProduct);
+        final String Product_Id = HighlightedProduct;
+
+        final Map<String,String> mymap = Database.get(HighlightedProduct);
+
         //      Initialisation
-        ImageView img1 = (ImageView)d1.findViewById(R.id.pp1);
-        ImageView img2 = (ImageView)d1.findViewById(R.id.pp2);
-        ImageView img3 = (ImageView)d1.findViewById(R.id.pp3);
-        EditText productname =(EditText) d1.findViewById(R.id.card_show_prodname);
-        EditText location =(EditText)d1.findViewById(R.id.card_show_location);
+
+        Img1 = (ImageView)d1.findViewById(R.id.pp1);
+        Img2 = (ImageView)d1.findViewById(R.id.pp2);
+        Img3 = (ImageView)d1.findViewById(R.id.pp3);
+        TextView header =(TextView)d1.findViewById(R.id.TITLE);
+        final EditText productname =(EditText) d1.findViewById(R.id.card_show_prodname);
+        final EditText location =(EditText)d1.findViewById(R.id.card_show_location);
         TextView dateoflisting =(TextView)d1.findViewById(R.id.card_show_doA);
-        EditText comments =(EditText) d1.findViewById(R.id.Comments);
+        final EditText comments =(EditText) d1.findViewById(R.id.Comments);
         Spinner spinner = (Spinner)d1.findViewById(R.id.spinner_change_category);
 
         // Assignment --------------------
-
-        //Log.e("Pic1",Cloud_URL+mymap.get("Product_pic1"));
-        PicassoClient.downloadImage(d1.getContext(),Cloud_URL1+mymap.get("Product_pic1"),img1);
-        PicassoClient.downloadImage(d1.getContext(),Cloud_URL1+mymap.get("Product_pic2"),img2);
-        PicassoClient.downloadImage(d1.getContext(),Cloud_URL1+mymap.get("Product_pic3"),img3);
+       Product_pic1 = mymap.get("Product_pic1");
+        Product_pic2 = mymap.get("Product_pic2");
+        Product_pic3 = mymap.get("Product_pic3");
+        PicassoClient.downloadImage(d1.getContext(),Cloud_URL1+mymap.get("Product_pic1"),Img1);
+        PicassoClient.downloadImage(d1.getContext(),Cloud_URL1+mymap.get("Product_pic2"),Img2);
+        PicassoClient.downloadImage(d1.getContext(),Cloud_URL1+mymap.get("Product_pic3"),Img3);
         productname.setText(mymap.get("Name"));
         location.setText(mymap.get("Location"));
-        dateoflisting.setText(mymap.get("Date Of Listing"));
+        header.setText(mymap.get("ProductName"));
+        dateoflisting.setText(mymap.get("Date_Of_Listing"));
         comments.setText(mymap.get("Comments"));
+
+        Img1.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                img_id ="";
+                ProductID = mymap.get("Product_pic1");
+                selectImage();
+                if(flag==1)
+                Product_pic1= mymap.get("Product_pic1").concat("_");
+                flag = 1;
+                //PicassoClient.downloadImage(d1.getContext(),Cloud_URL1+mymap.get("Product_pic1"),Img1);
+                //Img1.setImageResource(0);
+            }
+        });
+        Img2.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                img_id ="";
+                ProductID = mymap.get("Product_pic2");
+                selectImage();
+                    if(flag==1)
+                Product_pic2= mymap.get("Product_pic2").concat("_");
+                flag =1;
+              //  PicassoClient.downloadImage(d1.getContext(),Cloud_URL1+mymap.get("Product_pic2"),Img2);
+            }
+        });
+        Img3.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                img_id ="";
+                ProductID = mymap.get("Product_pic3");
+                selectImage();
+                if(flag==1)
+                Product_pic3= mymap.get("Product_pic3").concat("_");
+                flag=1;
+
+              //  PicassoClient.downloadImage(d1.getContext(),Cloud_URL1+mymap.get("Product_pic3"),Img3);
+            }
+        });
+
 
 
         ArrayAdapter<String> myproductAdapter;
@@ -606,9 +681,71 @@ Categorylist.clear();
             }
 
         });
+        //--------------------------------------------------UPDATE ONCLICK---------------------------------------------------------
+
 
         Button Updatebuttton = (Button) d1.findViewById(R.id.update_btn);
 
+       Updatebuttton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                final ProgressDialog progressDialog = new ProgressDialog(getActivity(),
+                        R.style.AppTheme_Dark_Dialog);
+                progressDialog.setIndeterminate(true);
+                progressDialog.setMessage("Updating.....");
+                progressDialog.show();
+
+
+                new android.os.Handler().postDelayed(
+                        new Runnable() {
+                            public void run() {
+try {
+
+    String Name = productname.getText().toString();
+    String Pic_id = mymap.get("Pic_id");
+    String Location = location.getText().toString();
+    String Product_Category = Usercategoryselection;
+    String PersonName = mymap.get("PersonName");
+    String Categories_Interested = mymap.get("Categories_Interested");
+    String Comments = comments.getText().toString();
+    String Date_Of_Listing = mymap.get("Date_Of_Listing");
+    String PersonId = mail;
+
+
+    if(Name.equals("")||Location.equals("")||Comments.equals(""))
+    {
+        Toast.makeText(getActivity(), "Fields Can't be Null", Toast.LENGTH_SHORT).show();
+    }
+    else
+    {
+        mProductRef.child(mail).child(Product_Id).setValue(Pic_id);
+
+        ProductClass productClass =new ProductClass(Name,Pic_id,Location,Product_Category,PersonName,
+                Product_pic1,Product_pic2,Product_pic3,Categories_Interested,Comments,Date_Of_Listing,PersonId);
+        fire.child(Product_Id).setValue(productClass);
+
+        Toast.makeText(getActivity(), "Product Updated!", Toast.LENGTH_SHORT).show();
+
+    }
+
+}catch (Exception e)
+{
+    Toast.makeText(getActivity(), "Error In Updating", Toast.LENGTH_SHORT).show();
+    Log.e("Error In Update",e.toString());
+    progressDialog.dismiss();
+}
+
+                                progressDialog.dismiss();
+                                d1.dismiss();
+                            }
+                        }, 3000);
+            }
+
+
+        });
+
+        //----------------------------------------------------------------------------------------------------------------
 
 
 
@@ -634,11 +771,31 @@ Categorylist.clear();
                             new Runnable() {
                                 public void run() {
 
-                                    mProductRef.child(mail).child(ToDelete).setValue(null);
-                                    fire.child(ToDelete).setValue(null);
-                                    mCategoryRef.child(ToDelete).setValue(null);
-                                    progressDialog.dismiss();
-                                    d1.dismiss();
+                                    new AlertDialog.Builder(d1.getContext())
+                                            .setTitle("Delete entry")
+                                            .setMessage("Are you sure you want to delete this entry?")
+                                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    // continue with delete
+                                                    mProductRef.child(mail).child(ToDelete).setValue(null);
+                                                    fire.child(ToDelete).setValue(null);
+                                                    mCategoryRef.child(ToDelete).setValue(null);
+                                                    progressDialog.dismiss();
+                                                    d1.dismiss();
+
+                                                }
+                                            })
+                                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    // do nothing
+                                                    d1.dismiss();
+                                                    progressDialog.dismiss();
+                                                }
+                                            })
+                                            .setIcon(android.R.drawable.ic_dialog_alert)
+                                            .show();
+
+
                                 }
                             }, 3000);
                 }
@@ -684,8 +841,7 @@ Categorylist.clear();
     {mCntRef.addValueEventListener(new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            cnt = dataSnapshot.getValue(String.class);
-
+            Cnt = dataSnapshot.getValue(String.class);
         }
         @Override
         public void onCancelled(FirebaseError firebaseError) {
