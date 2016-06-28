@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/blurimage">
+
+    <ListView android:id="@+id/Categories_show_list_filter"
+        android:layout_height="450dp"
+        android:layout_width="match_parent">
+    </ListView>
+    <android.support.v7.widget.AppCompatButton
+        android:id="@+id/btn_filter"
+        android:layout_width="fill_parent"
+        android:layout_below="@+id/Categories_show_list_filter"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:textStyle="bold"
+        android:background="#fecc2b"
+        android:padding="12dp"
+        android:text="Filter"/>
+
+
+
+</RelativeLayout>
