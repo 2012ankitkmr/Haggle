@@ -14,6 +14,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -63,6 +67,7 @@ import java.util.TreeMap;
 import ankit.barter.haggle.CardAdapterPackages.FeedAdapter;
 import ankit.barter.haggle.Categories;
 import ankit.barter.haggle.ClientClasses.PicassoClient;
+import ankit.barter.haggle.NoNetworkActivity;
 import ankit.barter.haggle.R;
 import ankit.barter.haggle.RecyclerItemClickListener;
 import ankit.barter.haggle.StructureClasses.Feeds;
@@ -132,6 +137,13 @@ int flag= 1;
 
         rv.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+
+        if(isNetworkAvailable()==false)
+        {
+            Intent in  = new Intent(getActivity(),NoNetworkActivity.class);
+            startActivity(in);
+        }
+
         fire=new Firebase(DB_URL);
         mProductRef = new Firebase(PRODUCT_LIST_URL);
         mCategoryRef = new Firebase(CATEGORY_LIST_URL);
@@ -200,6 +212,13 @@ int flag= 1;
                 img_id ="1";
                 flag1 =true;
                 selectImage();
+                ImageView imageView = (ImageView)d.findViewById(R.id.add_pp1);
+                Drawable drawable = imageView.getDrawable();
+                if (drawable instanceof BitmapDrawable) {
+                    BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+                    Bitmap bitmap = bitmapDrawable.getBitmap();
+                    bitmap.recycle();
+                }
             }
         });
         img2.setOnClickListener(new View.OnClickListener() {
@@ -209,6 +228,14 @@ int flag= 1;
                 flag2 =true;
                 img_id ="2";
                 selectImage();
+                ImageView imageView = (ImageView)d.findViewById(R.id.add_pp2);
+                Drawable drawable = imageView.getDrawable();
+                if (drawable instanceof BitmapDrawable) {
+                    BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+                    Bitmap bitmap = bitmapDrawable.getBitmap();
+                    bitmap.recycle();
+                }
+
             }
         });
         img3.setOnClickListener(new View.OnClickListener() {
@@ -218,6 +245,13 @@ int flag= 1;
                 flag3 =true;
                 img_id ="3";
                 selectImage();
+                ImageView imageView = (ImageView)d.findViewById(R.id.add_pp3);
+                Drawable drawable = imageView.getDrawable();
+                if (drawable instanceof BitmapDrawable) {
+                    BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+                    Bitmap bitmap = bitmapDrawable.getBitmap();
+                    bitmap.recycle();
+                }
             }
         });
 
@@ -667,6 +701,7 @@ int flag= 1;
         spinner.setSelection(Arrays.asList(Categories.CATEGORIES).indexOf(mymap.get("Product_Category")));
 //        final int Number = -1 ;
          Usercategoryselection = mymap.get("Product_Category");
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
@@ -904,14 +939,24 @@ try {
              adapter = new FeedAdapter(getActivity(), feeds);
              rv.setAdapter(adapter);
          } else {
- //            Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT).show();
              TextView t = (TextView) getActivity().findViewById(R.id.Blank_text);
              t.setVisibility(View.VISIBLE);
          }
      }
      catch (Exception e)
      {
-         Toast.makeText(getActivity(), "Add Products!", Toast.LENGTH_SHORT).show();
-     }
+      }
     }
+    public boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            Log.e("Network Testing", "Available");
+            return true;
+        }
+
+        Log.e("Network Testing", "Not Available");
+        return false;
+    }
+
 }
